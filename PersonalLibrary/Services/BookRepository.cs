@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using PersonalLibrary.Models;
 
@@ -41,7 +42,12 @@ public class BookRepository
 
     private void Save()
     {
-        var json = JsonSerializer.Serialize(_books, new JsonSerializerOptions { WriteIndented = true });
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+        var json = JsonSerializer.Serialize(_books, options);
         File.WriteAllText(_filePath, json);
     }
 
