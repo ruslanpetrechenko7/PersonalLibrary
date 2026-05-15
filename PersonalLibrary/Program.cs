@@ -7,16 +7,19 @@ var service = new BookService(repository);
 while (true)
 {
     Console.Clear();
-    Console.WriteLine("=== ОСОБИСТА БІБЛІОТЕКА ===");
-    Console.WriteLine("1. Показати всі книги");
-    Console.WriteLine("2. Додати книгу");
-    Console.WriteLine("3. Редагувати книгу");
-    Console.WriteLine("4. Видалити книгу");
-    Console.WriteLine("5. Пошук книги");
-    Console.WriteLine("6. Фільтрувати за статусом");
-    Console.WriteLine("7. Сортувати за роком видання");
-    Console.WriteLine("8. Сортувати за оцінкою");
-    Console.WriteLine("0. Вийти");
+    Console.WriteLine("╔══════════════════════════════════╗");
+    Console.WriteLine("║      ОСОБИСТА БІБЛІОТЕКА         ║");
+    Console.WriteLine("╠══════════════════════════════════╣");
+    Console.WriteLine("║  1. Показати всі книги           ║");
+    Console.WriteLine("║  2. Додати книгу                 ║");
+    Console.WriteLine("║  3. Редагувати книгу             ║");
+    Console.WriteLine("║  4. Видалити книгу               ║");
+    Console.WriteLine("║  5. Пошук книги                  ║");
+    Console.WriteLine("║  6. Фільтрувати за статусом      ║");
+    Console.WriteLine("║  7. Сортувати за роком видання   ║");
+    Console.WriteLine("║  8. Сортувати за оцінкою         ║");
+    Console.WriteLine("║  0. Вийти                        ║");
+    Console.WriteLine("╚══════════════════════════════════╝");
     Console.Write("\nОберіть пункт: ");
 
     var choice = Console.ReadLine();
@@ -65,19 +68,27 @@ void ShowBooks(List<Book> books)
         Console.ReadKey();
         return;
     }
-    Console.WriteLine($"{"ID",-5} {"Назва",-30} {"Автор",-20} {"Рік",-6} {"Жанр",-15} {"Оцінка",-8} {"Статус"}");
-    Console.WriteLine(new string('-', 95));
+
+    Console.WriteLine("╔═════╦══════════════════════════════╦════════════════════╦══════╦═══════════════╦════════╦══════════════════════╗");
+    Console.WriteLine("║ ID  ║ Назва                        ║ Автор              ║ Рік  ║ Жанр          ║ Оцінка ║ Статус               ║");
+    Console.WriteLine("╠═════╬══════════════════════════════╬════════════════════╬══════╬═══════════════╬════════╬══════════════════════╣");
+
     foreach (var book in books)
     {
-        Console.WriteLine($"{book.Id,-5} {book.Title,-30} {book.Author,-20} {book.Year,-6} {book.Genre,-15} {book.Rating,-8} {book.Status}");
+        Console.WriteLine($"║ {book.Id,-4}║ {book.Title,-29}║ {book.Author,-19}║ {book.Year,-5}║ {book.Genre,-14}║ {book.Rating,-7}║ {book.Status,-21}║");
     }
+
+    Console.WriteLine("╚═════╩══════════════════════════════╩════════════════════╩══════╩═══════════════╩════════╩══════════════════════╝");
+    Console.WriteLine($"\nВсього книг: {books.Count}");
     Console.ReadKey();
 }
 
 void AddBook(BookService service)
 {
     Console.Clear();
-    Console.WriteLine("=== ДОДАВАННЯ КНИГИ ===");
+    Console.WriteLine("╔══════════════════════════════════╗");
+    Console.WriteLine("║        ДОДАВАННЯ КНИГИ           ║");
+    Console.WriteLine("╚══════════════════════════════════╝");
 
     var book = new Book();
 
@@ -117,14 +128,16 @@ void AddBook(BookService service)
     };
 
     service.Add(book);
-    Console.WriteLine("Книгу успішно додано!");
+    Console.WriteLine("\n✓ Книгу успішно додано!");
     Console.ReadKey();
 }
 
 void EditBook(BookService service)
 {
     Console.Clear();
-    Console.WriteLine("=== РЕДАГУВАННЯ КНИГИ ===");
+    Console.WriteLine("╔══════════════════════════════════╗");
+    Console.WriteLine("║       РЕДАГУВАННЯ КНИГИ          ║");
+    Console.WriteLine("╚══════════════════════════════════╝");
     ShowBooks(service.GetAll());
 
     Console.Write("Введіть ID книги для редагування: ");
@@ -173,19 +186,21 @@ void EditBook(BookService service)
     {
         "1" => "читаю",
         "2" => "прочитана",
-        "3" => "прочитана",
+        "3" => "хочу прочитати",
         _ => book.Status
     };
 
     service.Update(book);
-    Console.WriteLine("Книгу успішно оновлено!");
+    Console.WriteLine("\n✓ Книгу успішно оновлено!");
     Console.ReadKey();
 }
 
 void DeleteBook(BookService service)
 {
     Console.Clear();
-    Console.WriteLine("=== ВИДАЛЕННЯ КНИГИ ===");
+    Console.WriteLine("╔══════════════════════════════════╗");
+    Console.WriteLine("║        ВИДАЛЕННЯ КНИГИ           ║");
+    Console.WriteLine("╚══════════════════════════════════╝");
     ShowBooks(service.GetAll());
 
     Console.Write("Введіть ID книги для видалення: ");
@@ -208,7 +223,7 @@ void DeleteBook(BookService service)
     if (Console.ReadLine()?.ToLower() == "так")
     {
         service.Delete(id);
-        Console.WriteLine("Книгу видалено!");
+        Console.WriteLine("\n✓ Книгу видалено!");
     }
     Console.ReadKey();
 }
@@ -216,7 +231,9 @@ void DeleteBook(BookService service)
 void SearchBooks(BookService service)
 {
     Console.Clear();
-    Console.WriteLine("=== ПОШУК КНИГИ ===");
+    Console.WriteLine("╔══════════════════════════════════╗");
+    Console.WriteLine("║          ПОШУК КНИГИ             ║");
+    Console.WriteLine("╚══════════════════════════════════╝");
     Console.Write("Введіть запит (назва, автор або жанр): ");
     var query = Console.ReadLine() ?? string.Empty;
     ShowBooks(service.Search(query));
@@ -225,10 +242,13 @@ void SearchBooks(BookService service)
 void FilterBooks(BookService service)
 {
     Console.Clear();
-    Console.WriteLine("=== ФІЛЬТРАЦІЯ ЗА СТАТУСОМ ===");
-    Console.WriteLine("1. читаю");
-    Console.WriteLine("2. прочитана");
-    Console.WriteLine("3. хочу прочитати");
+    Console.WriteLine("╔══════════════════════════════════╗");
+    Console.WriteLine("║     ФІЛЬТРАЦІЯ ЗА СТАТУСОМ       ║");
+    Console.WriteLine("╠══════════════════════════════════╣");
+    Console.WriteLine("║  1. читаю                        ║");
+    Console.WriteLine("║  2. прочитана                    ║");
+    Console.WriteLine("║  3. хочу прочитати               ║");
+    Console.WriteLine("╚══════════════════════════════════╝");
     Console.Write("Оберіть (1-3): ");
 
     var status = Console.ReadLine() switch
