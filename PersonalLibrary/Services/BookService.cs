@@ -12,11 +12,8 @@ public class BookService
     }
 
     public List<Book> GetAll() => _repository.GetAll();
-
     public void Add(Book book) => _repository.Add(book);
-
     public void Update(Book book) => _repository.Update(book);
-
     public void Delete(int id) => _repository.Delete(id);
 
     public List<Book> Search(string query)
@@ -47,6 +44,18 @@ public class BookService
     {
         return _repository.GetAll()
             .OrderByDescending(b => b.Rating)
+            .ToList();
+    }
+
+    public List<Book> AdvancedSearch(string title, string author, string genre, int? yearFrom, int? yearTo)
+    {
+        return _repository.GetAll()
+            .Where(b =>
+                (string.IsNullOrEmpty(title) || b.Title.ToLower().Contains(title.ToLower())) &&
+                (string.IsNullOrEmpty(author) || b.Author.ToLower().Contains(author.ToLower())) &&
+                (string.IsNullOrEmpty(genre) || b.Genre.ToLower().Contains(genre.ToLower())) &&
+                (yearFrom == null || b.Year >= yearFrom) &&
+                (yearTo == null || b.Year <= yearTo))
             .ToList();
     }
 }

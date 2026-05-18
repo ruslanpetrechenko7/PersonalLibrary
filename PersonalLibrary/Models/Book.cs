@@ -1,7 +1,6 @@
 namespace PersonalLibrary.Models;
 
 /// <summary>
-/// Представляє книгу в особистій бібліотеці.
 /// </summary>
 public class Book
 {

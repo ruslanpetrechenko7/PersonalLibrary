@@ -15,9 +15,10 @@ while (true)
     Console.WriteLine("║  3. Редагувати книгу             ║");
     Console.WriteLine("║  4. Видалити книгу               ║");
     Console.WriteLine("║  5. Пошук книги                  ║");
-    Console.WriteLine("║  6. Фільтрувати за статусом      ║");
-    Console.WriteLine("║  7. Сортувати за роком видання   ║");
-    Console.WriteLine("║  8. Сортувати за оцінкою         ║");
+    Console.WriteLine("║  6. Розширений пошук             ║");
+    Console.WriteLine("║  7. Фільтрувати за статусом      ║");
+    Console.WriteLine("║  8. Сортувати за роком видання   ║");
+    Console.WriteLine("║  9. Сортувати за оцінкою         ║");
     Console.WriteLine("║  0. Вийти                        ║");
     Console.WriteLine("╚══════════════════════════════════╝");
     Console.Write("\nОберіть пункт: ");
@@ -42,12 +43,15 @@ while (true)
             SearchBooks(service);
             break;
         case "6":
-            FilterBooks(service);
+            AdvancedSearchBooks(service);
             break;
         case "7":
-            ShowBooks(service.SortByYear());
+            FilterBooks(service);
             break;
         case "8":
+            ShowBooks(service.SortByYear());
+            break;
+        case "9":
             ShowBooks(service.SortByRating());
             break;
         case "0":
@@ -237,6 +241,35 @@ void SearchBooks(BookService service)
     Console.Write("Введіть запит (назва, автор або жанр): ");
     var query = Console.ReadLine() ?? string.Empty;
     ShowBooks(service.Search(query));
+}
+
+void AdvancedSearchBooks(BookService service)
+{
+    Console.Clear();
+    Console.WriteLine("╔══════════════════════════════════╗");
+    Console.WriteLine("║       РОЗШИРЕНИЙ ПОШУК           ║");
+    Console.WriteLine("╚══════════════════════════════════╝");
+    Console.WriteLine("(натисніть Enter щоб пропустити поле)");
+    Console.WriteLine();
+
+    Console.Write("Назва: ");
+    var title = Console.ReadLine()?.Trim() ?? string.Empty;
+
+    Console.Write("Автор: ");
+    var author = Console.ReadLine()?.Trim() ?? string.Empty;
+
+    Console.Write("Жанр: ");
+    var genre = Console.ReadLine()?.Trim() ?? string.Empty;
+
+    Console.Write("Рік від: ");
+    int? yearFrom = null;
+    if (int.TryParse(Console.ReadLine(), out int yf)) yearFrom = yf;
+
+    Console.Write("Рік до: ");
+    int? yearTo = null;
+    if (int.TryParse(Console.ReadLine(), out int yt)) yearTo = yt;
+
+    ShowBooks(service.AdvancedSearch(title, author, genre, yearFrom, yearTo));
 }
 
 void FilterBooks(BookService service)
