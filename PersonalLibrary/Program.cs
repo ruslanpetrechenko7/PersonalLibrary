@@ -11,7 +11,7 @@ while (true)
     Console.WriteLine("║       ОСОБИСТА БІБЛІОТЕКА          ║");
     Console.WriteLine("╠════════════════════════════════════╣");
     Console.WriteLine("║  1. Показати всі книги             ║");
-    Console.WriteLine("║  2. Додати книгу                   ║");+
+    Console.WriteLine("║  2. Додати книгу                   ║");
     Console.WriteLine("║  3. Редагувати книгу               ║");
     Console.WriteLine("║  4. Видалити книгу                 ║");
     Console.WriteLine("║  5. Пошук книги                    ║");
@@ -19,6 +19,7 @@ while (true)
     Console.WriteLine("║  7. Фільтрувати за статусом        ║");
     Console.WriteLine("║  8. Сортувати за роком видання     ║");
     Console.WriteLine("║  9. Сортувати за оцінкою           ║");
+    Console.WriteLine("║  10. Інвентаризація                ║");
     Console.WriteLine("║  0. Вийти                          ║");
     Console.WriteLine("╚════════════════════════════════════╝");
     Console.Write("\nОберіть пункт: ");
@@ -36,6 +37,7 @@ while (true)
         case "7": FilterBooks(service); break;
         case "8": ShowBooks(service.SortByYear()); break;
         case "9": ShowBooks(service.SortByRating()); break;
+        case "10": Inventory(service); break;
         case "0": return;
         default:
             Console.WriteLine("Невірний вибір!");
@@ -54,18 +56,18 @@ void ShowBooks(List<Book> books)
         return;
     }
 
-    Console.WriteLine("╔═════╦══════════════════════════════════════╦══════════════════════╦══════╦═══════════════╦════════╦══════════════════════╗");
-    Console.WriteLine("║ ID  ║ Назва                                ║ Автор                ║ Рік  ║ Жанр          ║ Оцінка ║ Статус               ║");
-    Console.WriteLine("╠═════╬══════════════════════════════════════╬══════════════════════╬══════╬═══════════════╬════════╬══════════════════════╣");
+    Console.WriteLine("╔═════╦══════════════════════════╦════════════════╦══════╦══════════╦══════════════╦════════════╦════════╦══════════════════════╗");
+    Console.WriteLine("║ ID  ║ Назва                    ║ Автор          ║ Рік  ║ Жанр     ║ Розділ       ║ Походження ║ Оцінка ║ Статус               ║");
+    Console.WriteLine("╠═════╬══════════════════════════╬════════════════╬══════╬══════════╬══════════════╬════════════╬════════╬══════════════════════╣");
 
     foreach (var book in books)
     {
-        var title = book.Title.Length > 36 ? book.Title.Substring(0, 33) + "..." : book.Title;
-        var author = book.Author.Length > 20 ? book.Author.Substring(0, 17) + "..." : book.Author;
-        Console.WriteLine($"║ {book.Id,-4}║ {title,-37}║ {author,-21}║ {book.Year,-5}║ {book.Genre,-14}║ {book.Rating,-7}║ {book.Status,-21}║");
+        var title = book.Title.Length > 25 ? book.Title.Substring(0, 22) + "..." : book.Title;
+        var author = book.Author.Length > 14 ? book.Author.Substring(0, 11) + "..." : book.Author;
+        Console.WriteLine($"║ {book.Id,-4}║ {title,-25}║ {author,-15}║ {book.Year,-5}║ {book.Genre,-9}║ {book.Section,-13}║ {book.Origin,-11}║ {book.Rating,-7}║ {book.Status,-21}║");
     }
 
-    Console.WriteLine("╚═════╩══════════════════════════════════════╩══════════════════════╩══════╩═══════════════╩════════╩══════════════════════╝");
+    Console.WriteLine("╚═════╩══════════════════════════╩════════════════╩══════╩══════════╩══════════════╩════════════╩════════╩══════════════════════╝");
     Console.WriteLine($"\nВсього книг: {books.Count}");
     Console.ReadKey();
 }
@@ -100,6 +102,30 @@ void AddBook(BookService service)
 
     Console.Write("Жанр: ");
     book.Genre = Console.ReadLine()?.Trim() ?? string.Empty;
+
+    Console.WriteLine("Розділ: 1. Спеціальна  2. Хобі  3. Белетристика  4. Дом. господарство  5. Інше");
+    Console.Write("Оберіть (1-5): ");
+    book.Section = Console.ReadLine() switch
+    {
+        "1" => "Спеціальна",
+        "2" => "Хобі",
+        "3" => "Белетристика",
+        "4" => "Дом. господарство",
+        _ => "Інше"
+    };
+
+    Console.WriteLine("Походження: 1. Куплена  2. Подарована  3. Позичена");
+    Console.Write("Оберіть (1-3): ");
+    book.Origin = Console.ReadLine() switch
+    {
+        "1" => "куплена",
+        "2" => "подарована",
+        _ => "позичена"
+    };
+
+    Console.WriteLine("Наявність: 1. Є в наявності  2. Відсутня (позичена комусь)");
+    Console.Write("Оберіть (1-2): ");
+    book.IsAvailable = Console.ReadLine() != "2";
 
     Console.Write("Оцінка (1-10): ");
     if (int.TryParse(Console.ReadLine(), out int rating) && rating >= 1 && rating <= 10)
@@ -162,6 +188,20 @@ void EditBook(BookService service)
     Console.Write($"Жанр ({book.Genre}): ");
     var genre = Console.ReadLine()?.Trim();
     if (!string.IsNullOrEmpty(genre)) book.Genre = genre;
+
+    Console.Write($"Розділ ({book.Section}): ");
+    var section = Console.ReadLine()?.Trim();
+    if (!string.IsNullOrEmpty(section)) book.Section = section;
+
+    Console.Write($"Походження ({book.Origin}): ");
+    var origin = Console.ReadLine()?.Trim();
+    if (!string.IsNullOrEmpty(origin)) book.Origin = origin;
+
+    Console.WriteLine($"Наявність ({(book.IsAvailable ? "є" : "немає")}): 1. Є  2. Немає");
+    Console.Write("Оберіть (1-2): ");
+    var avail = Console.ReadLine();
+    if (avail == "1") book.IsAvailable = true;
+    else if (avail == "2") book.IsAvailable = false;
 
     Console.Write($"Оцінка ({book.Rating}): ");
     if (int.TryParse(Console.ReadLine(), out int rating) && rating >= 1 && rating <= 10)
@@ -275,4 +315,31 @@ void FilterBooks(BookService service)
     };
 
     ShowBooks(service.FilterByStatus(status));
+}
+
+void Inventory(BookService service)
+{
+    Console.Clear();
+    Console.WriteLine("╔════════════════════════════════════╗");
+    Console.WriteLine("║          ІНВЕНТАРИЗАЦІЯ            ║");
+    Console.WriteLine("╚════════════════════════════════════╝");
+
+    var books = service.GetAll();
+
+    Console.WriteLine($"Всього книг:         {books.Count}");
+    Console.WriteLine($"Прочитано:           {books.Count(b => b.Status == "прочитана")}");
+    Console.WriteLine($"Читаю зараз:         {books.Count(b => b.Status == "читаю")}");
+    Console.WriteLine($"Хочу прочитати:      {books.Count(b => b.Status == "хочу прочитати")}");
+    Console.WriteLine($"Є в наявності:       {books.Count(b => b.IsAvailable)}");
+    Console.WriteLine($"Відсутні (позичені): {books.Count(b => !b.IsAvailable)}");
+    Console.WriteLine();
+    Console.WriteLine("─── За розділами ───");
+    foreach (var section in books.GroupBy(b => b.Section))
+        Console.WriteLine($"  {section.Key}: {section.Count()} книг");
+    Console.WriteLine();
+    Console.WriteLine("─── За походженням ───");
+    foreach (var origin in books.GroupBy(b => b.Origin))
+        Console.WriteLine($"  {origin.Key}: {origin.Count()} книг");
+
+    Console.ReadKey();
 }
