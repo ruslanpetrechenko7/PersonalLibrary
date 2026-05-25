@@ -13,4 +13,7 @@ public class Book
     public bool IsAvailable { get; set; } = true;
     public int Rating { get; set; } = 0;
     public string Status { get; set; } = "хочу прочитати";
+    public string Notes { get; set; } = string.Empty;
+    public DateTime AddedDate { get; set; } = DateTime.Now;
+    public DateTime? ReminderDate { get; set; }
 }

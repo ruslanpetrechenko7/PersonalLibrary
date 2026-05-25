@@ -20,6 +20,8 @@ while (true)
     Console.WriteLine("║  8. Сортувати за роком видання     ║");
     Console.WriteLine("║  9. Сортувати за оцінкою           ║");
     Console.WriteLine("║  10. Інвентаризація                ║");
+    Console.WriteLine("║  11. Нагадування                   ║");
+    Console.WriteLine("║  12. Резервна копія                ║");
     Console.WriteLine("║  0. Вийти                          ║");
     Console.WriteLine("╚════════════════════════════════════╝");
     Console.Write("\nОберіть пункт: ");
@@ -38,6 +40,8 @@ while (true)
         case "8": ShowBooks(service.SortByYear()); break;
         case "9": ShowBooks(service.SortByRating()); break;
         case "10": Inventory(service); break;
+        case "11": ShowReminders(service); break;
+        case "12": BackupDatabase(); break;
         case "0": return;
         default:
             Console.WriteLine("Невірний вибір!");
@@ -56,18 +60,18 @@ void ShowBooks(List<Book> books)
         return;
     }
 
-    Console.WriteLine("╔═════╦══════════════════════════╦════════════════╦══════╦══════════╦══════════════╦════════════╦════════╦══════════════════════╗");
-    Console.WriteLine("║ ID  ║ Назва                    ║ Автор          ║ Рік  ║ Жанр     ║ Розділ       ║ Походження ║ Оцінка ║ Статус               ║");
-    Console.WriteLine("╠═════╬══════════════════════════╬════════════════╬══════╬══════════╬══════════════╬════════════╬════════╬══════════════════════╣");
+    Console.WriteLine("╔═════╦══════════════════════════╦════════════════╦══════╦══════════╦════════╦══════════════════════╗");
+    Console.WriteLine("║ ID  ║ Назва                    ║ Автор          ║ Рік  ║ Розділ   ║ Оцінка ║ Статус               ║");
+    Console.WriteLine("╠═════╬══════════════════════════╬════════════════╬══════╬══════════╬════════╬══════════════════════╣");
 
     foreach (var book in books)
     {
         var title = book.Title.Length > 25 ? book.Title.Substring(0, 22) + "..." : book.Title;
         var author = book.Author.Length > 14 ? book.Author.Substring(0, 11) + "..." : book.Author;
-        Console.WriteLine($"║ {book.Id,-4}║ {title,-25}║ {author,-15}║ {book.Year,-5}║ {book.Genre,-9}║ {book.Section,-13}║ {book.Origin,-11}║ {book.Rating,-7}║ {book.Status,-21}║");
+        Console.WriteLine($"║ {book.Id,-4}║ {title,-25}║ {author,-15}║ {book.Year,-5}║ {book.Section,-9}║ {book.Rating,-7}║ {book.Status,-21}║");
     }
 
-    Console.WriteLine("╚═════╩══════════════════════════╩════════════════╩══════╩══════════╩══════════════╩════════════╩════════╩══════════════════════╝");
+    Console.WriteLine("╚═════╩══════════════════════════╩════════════════╩══════╩══════════╩════════╩══════════════════════╝");
     Console.WriteLine($"\nВсього книг: {books.Count}");
     Console.ReadKey();
 }
@@ -80,6 +84,7 @@ void AddBook(BookService service)
     Console.WriteLine("╚════════════════════════════════════╝");
 
     var book = new Book();
+    book.AddedDate = DateTime.Now;
 
     Console.Write("Назва: ");
     book.Title = Console.ReadLine()?.Trim() ?? string.Empty;
@@ -140,8 +145,18 @@ void AddBook(BookService service)
         _ => "хочу прочитати"
     };
 
+    Console.Write("Нотатки (або Enter щоб пропустити): ");
+    book.Notes = Console.ReadLine()?.Trim() ?? string.Empty;
+
+    Console.Write("Нагадування (дата у форматі дд.мм.рррр або Enter щоб пропустити): ");
+    var reminderInput = Console.ReadLine()?.Trim();
+    if (DateTime.TryParseExact(reminderInput, "dd.MM.yyyy",
+        System.Globalization.CultureInfo.InvariantCulture,
+        System.Globalization.DateTimeStyles.None, out DateTime reminder))
+        book.ReminderDate = reminder;
+
     service.Add(book);
-    Console.WriteLine("\n✓ Книгу успішно додано!");
+    Console.WriteLine($"\n✓ Книгу успішно додано! Дата додавання: {book.AddedDate:dd.MM.yyyy}");
     Console.ReadKey();
 }
 
@@ -217,6 +232,17 @@ void EditBook(BookService service)
         _ => book.Status
     };
 
+    Console.Write($"Нотатки ({book.Notes}): ");
+    var notes = Console.ReadLine()?.Trim();
+    if (!string.IsNullOrEmpty(notes)) book.Notes = notes;
+
+    Console.Write($"Нагадування ({(book.ReminderDate.HasValue ? book.ReminderDate.Value.ToString("dd.MM.yyyy") : "немає")}): ");
+    var reminderInput = Console.ReadLine()?.Trim();
+    if (DateTime.TryParseExact(reminderInput, "dd.MM.yyyy",
+        System.Globalization.CultureInfo.InvariantCulture,
+        System.Globalization.DateTimeStyles.None, out DateTime reminder))
+        book.ReminderDate = reminder;
+
     service.Update(book);
     Console.WriteLine("\n✓ Книгу успішно оновлено!");
     Console.ReadKey();
@@ -263,7 +289,30 @@ void SearchBooks(BookService service)
     Console.WriteLine("╚════════════════════════════════════╝");
     Console.Write("Введіть запит (назва, автор або жанр): ");
     var query = Console.ReadLine() ?? string.Empty;
-    ShowBooks(service.Search(query));
+
+    var results = service.Search(query);
+
+    if (results.Count == 0)
+    {
+        Console.WriteLine("Книг не знайдено.");
+        Console.ReadKey();
+        return;
+    }
+
+    Console.WriteLine($"\nЗнайдено {results.Count} книг. Як відсортувати?");
+    Console.WriteLine("1. За роком видання");
+    Console.WriteLine("2. За оцінкою");
+    Console.WriteLine("3. Без сортування");
+    Console.Write("Оберіть (1-3): ");
+
+    results = Console.ReadLine() switch
+    {
+        "1" => results.OrderBy(b => b.Year).ToList(),
+        "2" => results.OrderByDescending(b => b.Rating).ToList(),
+        _ => results
+    };
+
+    ShowBooks(results);
 }
 
 void AdvancedSearchBooks(BookService service)
@@ -341,5 +390,65 @@ void Inventory(BookService service)
     foreach (var origin in books.GroupBy(b => b.Origin))
         Console.WriteLine($"  {origin.Key}: {origin.Count()} книг");
 
+    Console.ReadKey();
+}
+
+void ShowReminders(BookService service)
+{
+    Console.Clear();
+    Console.WriteLine("╔════════════════════════════════════╗");
+    Console.WriteLine("║           НАГАДУВАННЯ              ║");
+    Console.WriteLine("╚════════════════════════════════════╝");
+
+    var books = service.GetAll()
+        .Where(b => b.ReminderDate.HasValue)
+        .OrderBy(b => b.ReminderDate)
+        .ToList();
+
+    if (books.Count == 0)
+    {
+        Console.WriteLine("Нагадувань немає.");
+        Console.ReadKey();
+        return;
+    }
+
+    var today = DateTime.Today;
+
+    foreach (var book in books)
+    {
+        var days = (book.ReminderDate!.Value.Date - today).Days;
+        var status = days < 0
+            ? $"⚠ прострочено на {Math.Abs(days)} днів"
+            : days == 0
+                ? "✓ сьогодні!"
+                : $"через {days} днів";
+
+        Console.WriteLine($"[{book.ReminderDate.Value:dd.MM.yyyy}] {book.Title} — {status}");
+        if (!string.IsNullOrEmpty(book.Notes))
+            Console.WriteLine($"  Нотатки: {book.Notes}");
+    }
+
+    Console.ReadKey();
+}
+
+void BackupDatabase()
+{
+    Console.Clear();
+    Console.WriteLine("╔════════════════════════════════════╗");
+    Console.WriteLine("║         РЕЗЕРВНА КОПІЯ             ║");
+    Console.WriteLine("╚════════════════════════════════════╝");
+
+    var source = "library.json";
+    var backup = $"library_backup_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.json";
+
+    if (!File.Exists(source))
+    {
+        Console.WriteLine("Файл бази даних не знайдено!");
+        Console.ReadKey();
+        return;
+    }
+
+    File.Copy(source, backup);
+    Console.WriteLine($"\n✓ Резервну копію збережено: {backup}");
     Console.ReadKey();
 }
